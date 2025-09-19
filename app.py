@@ -1,5 +1,5 @@
 import streamlit as st
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageOps
 
 st.title("💚 Stitch Progress App")
 
@@ -19,18 +19,19 @@ elif porcentaje <= 60:
 else:
     color = (255, 0, 0, 217)     # rojo
 
-# Crear overlay del color
+# Crear overlay de color proporcional
 overlay = Image.new("RGBA", base.size, (0, 0, 0, 0))
 draw = ImageDraw.Draw(overlay)
-
-# Dibujar el relleno proporcional desde abajo
 altura_coloreada = int(h * (porcentaje / 100))
 draw.rectangle([(0, h - altura_coloreada), (w, h)], fill=color)
 
-# Usar el canal alfa del contorno para que solo se coloree dentro del dibujo
-alpha_mask = base.split()[3]  # canal alfa
+# Crear máscara binaria a partir del canal alfa del PNG
+alpha = base.getchannel("A")
+mask = alpha.point(lambda p: 255 if p > 0 else 0)  # todo lo que no es totalmente transparente
+
+# Pegar overlay solo dentro del contorno
 coloreado = Image.new("RGBA", base.size, (0, 0, 0, 0))
-coloreado.paste(overlay, (0, 0), mask=alpha_mask)
+coloreado.paste(overlay, (0, 0), mask=mask)
 
 # Fondo blanco
 fondo = Image.new("RGBA", base.size, (255, 255, 255, 255))
