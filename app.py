@@ -49,14 +49,14 @@ resultado = Image.alpha_composite(fondo, coloreado)
 resultado = Image.alpha_composite(resultado, base)
 
 # ---------------------------
-# 5. Agregar texto: nombre y mensaje vertical
+# 5. Agregar texto
 # ---------------------------
 draw_result = ImageDraw.Draw(resultado)
 
-# Fuente grande (ajustar tamaño según tu imagen)
+# Fuente grande
 try:
-    font_name = ImageFont.truetype("arial.ttf", 80)
-    font_message = ImageFont.truetype("arial.ttf", 60)
+    font_name = ImageFont.truetype("arial.ttf", 100)
+    font_message = ImageFont.truetype("arial.ttf", 80)
 except:
     font_name = ImageFont.load_default()
     font_message = ImageFont.load_default()
@@ -66,16 +66,23 @@ bbox = draw_result.textbbox((0, 0), nombre, font=font_name)
 text_width = bbox[2] - bbox[0]
 draw_result.text(((w - text_width) / 2, 10), nombre, fill=(0,0,0,255), font=font_name)
 
-# Mensaje con porcentaje dentro del dibujo (vertical centrado)
+# ---------------------------
+# Texto vertical con porcentaje
+# ---------------------------
 mensaje = f"Tu porcentaje de maldad es del {porcentaje}%"
-bbox = draw_result.textbbox((0, 0), mensaje, font=font_message)
-text_width = bbox[2] - bbox[0]
-text_height = bbox[50] - bbox[50]
-draw_result.text(((w - text_width) / 2, h/2 - text_height/2), mensaje, fill=(0,0,0,255), font=font_message)
+
+# Crear imagen temporal solo para el texto
+text_img = Image.new("RGBA", (500, 2000), (0,0,0,0))  # ancho x alto grande suficiente
+text_draw = ImageDraw.Draw(text_img)
+text_draw.text((0,0), mensaje, font=font_message, fill=(0,0,0,255))
+
+# Rotar 90° para que quede vertical
+text_rotated = text_img.rotate(90, expand=1)
+
+# Pegar sobre la imagen final en un margen izquierdo
+resultado.paste(text_rotated, (10, h//2 - text_rotated.height//2), text_rotated)
 
 # ---------------------------
 # 6. Mostrar resultado
 # ---------------------------
 st.image(resultado)
-
-
