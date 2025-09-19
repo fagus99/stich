@@ -1,22 +1,23 @@
 import streamlit as st
-from PIL import Image, ImageDraw, ImageFont, ImageOps
+from PIL import Image, ImageDraw, ImageOps
+import base64
+from io import BytesIO
 
+st.set_page_config(layout="wide")
 st.title("💚 Stitch Progress App")
 
 # Inputs
 nombre = st.text_input("Escribí el nombre de la persona")
 porcentaje = st.slider("Seleccioná porcentaje", 1, 100, 50)
 
-# Cargar imagen (contorno)
+# Cargar imagen PNG
 base = Image.open("stich.png").convert("RGBA")
 w, h = base.size
 
-# Escalar imagen para que el texto se vea grande
-escala = 3  # puedes ajustar según convenga
-base = base.resize((w*escala, h*escala), Image.Resampling.LANCZOS)
-w, h = base.size
-
-# Colores con 85% de transparencia (alpha ~ 217)
+# ---------------------------
+# Relleno proporcional dentro del contorno
+# ---------------------------
+# Elegir color según porcentaje
 if porcentaje <= 30:
     color = (0, 255, 0, 217)     # verde
 elif porcentaje <= 60:
@@ -24,70 +25,72 @@ elif porcentaje <= 60:
 else:
     color = (255, 0, 0, 217)     # rojo
 
-# ---------------------------
-# 1. Crear máscara del interior del dibujo
-# ---------------------------
+# Crear máscara del interior
 gray = base.convert("L")
 inverted = ImageOps.invert(gray)
 mask_interior = inverted.point(lambda p: 255 if p > 128 else 0)
 
-# ---------------------------
-# 2. Crear overlay del color
-# ---------------------------
+# Crear overlay de color
 overlay = Image.new("RGBA", base.size, (0, 0, 0, 0))
 draw = ImageDraw.Draw(overlay)
 altura_coloreada = int(h * (porcentaje / 100))
 draw.rectangle([(0, h - altura_coloreada), (w, h)], fill=color)
 
-coloreado = Image.new("RGBA", base.size, (0, 0, 0, 0))
-coloreado.paste(overlay, (0, 0), mask=mask_interior)
+coloreado = Image.new("RGBA", base.size, (0,0,0,0))
+coloreado.paste(overlay, (0,0), mask_interior)
 
-# ---------------------------
-# 3. Fondo blanco
-# ---------------------------
-fondo = Image.new("RGBA", base.size, (255, 255, 255, 255))
+# Fondo blanco
+fondo = Image.new("RGBA", base.size, (255,255,255,255))
 
-# ---------------------------
-# 4. Combinar: fondo + color + contorno original
-# ---------------------------
+# Combinar: fondo + color + contorno original
 resultado = Image.alpha_composite(fondo, coloreado)
 resultado = Image.alpha_composite(resultado, base)
 
 # ---------------------------
-# 5. Agregar texto
+# Convertir imagen final a base64 para HTML
 # ---------------------------
-draw_result = ImageDraw.Draw(resultado)
-
-# Fuente grande proporcional al tamaño de la imagen
-try:
-    font_name = ImageFont.truetype("arial.ttf", int(h*0.1))      # nombre
-    font_message = ImageFont.truetype("arial.ttf", int(h*0.08))  # mensaje vertical
-except:
-    font_name = ImageFont.load_default()
-    font_message = ImageFont.load_default()
-
-# Nombre arriba centrado
-bbox = draw_result.textbbox((0, 0), nombre, font=font_name)
-text_width = bbox[2] - bbox[0]
-draw_result.text(((w - text_width) / 2, int(h*0.02)), nombre, fill=(0,0,0,255), font=font_name)
+buffered = BytesIO()
+resultado.save(buffered, format="PNG")
+img_str = base64.b64encode(buffered.getvalue()).decode()
 
 # ---------------------------
-# Texto vertical con porcentaje en margen izquierdo
+# Mostrar imagen con texto superpuesto usando HTML/CSS
 # ---------------------------
-mensaje = f"Tu porcentaje de maldad es del {porcentaje}%"
+st.markdown(
+f"""
+<div style="position: relative; display: inline-block;">
 
-# Crear imagen temporal para el texto
-text_img = Image.new("RGBA", (int(w*0.4), h*2), (0,0,0,0))
-text_draw = ImageDraw.Draw(text_img)
-text_draw.text((0,0), mensaje, font=font_message, fill=(0,0,0,255))
+    <!-- Imagen -->
+    <img src="data:image/png;base64,{img_str}" style="display:block; max-width:100%;" />
 
-# Rotar 90° para que quede vertical
-text_rotated = text_img.rotate(90, expand=1)
+    <!-- Nombre arriba centrado -->
+    <div style="
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: rgba(255, 255, 255, 0.7);
+        padding: 10px 20px;
+        font-size: 50px;
+        font-weight: bold;
+    ">
+        {nombre}
+    </div>
 
-# Pegar sobre la imagen final en margen izquierdo, centrado verticalmente
-resultado.paste(text_rotated, (10, h//2 - text_rotated.height//2), text_rotated)
+    <!-- Texto vertical en margen izquierdo -->
+    <div style="
+        position: absolute;
+        top: 50%;
+        left: 0px;
+        transform: translateY(-50%) rotate(-90deg);
+        transform-origin: left top;
+        background-color: rgba(255, 255, 255, 0.7);
+        padding: 10px 20px;
+        font-size: 40px;
+        font-weight: bold;
+    ">
+        Tu porcentaje de maldad es del {porcentaje}%
+    </div>
 
-# ---------------------------
-# 6. Mostrar resultado
-# ---------------------------
-st.image(resultado)
+</div>
+""", unsafe_allow_html=True)
