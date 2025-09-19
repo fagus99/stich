@@ -1,5 +1,5 @@
 import streamlit as st
-from PIL import Image, ImageDraw, ImageOps
+from PIL import Image, ImageDraw, ImageFont, ImageOps
 
 st.title("💚 Stitch Progress App")
 
@@ -22,13 +22,8 @@ else:
 # ---------------------------
 # 1. Crear máscara del interior del dibujo
 # ---------------------------
-# Convertir a escala de grises
 gray = base.convert("L")
-
-# Invertir para que contorno sea negro y relleno blanco
 inverted = ImageOps.invert(gray)
-
-# Umbral: todo lo suficientemente claro es relleno
 mask_interior = inverted.point(lambda p: 255 if p > 128 else 0)
 
 # ---------------------------
@@ -39,7 +34,6 @@ draw = ImageDraw.Draw(overlay)
 altura_coloreada = int(h * (porcentaje / 100))
 draw.rectangle([(0, h - altura_coloreada), (w, h)], fill=color)
 
-# Aplicar máscara para que solo coloree dentro del interior
 coloreado = Image.new("RGBA", base.size, (0, 0, 0, 0))
 coloreado.paste(overlay, (0, 0), mask=mask_interior)
 
@@ -50,9 +44,4 @@ fondo = Image.new("RGBA", base.size, (255, 255, 255, 255))
 
 # ---------------------------
 # 4. Combinar: fondo + color + contorno original
-# ---------------------------
-resultado = Image.alpha_composite(fondo, coloreado)
-resultado = Image.alpha_composite(resultado, base)
-
-# Mostrar resultado
-st.image(resultado, caption=f"{nombre} - {porcentaje}%")
+# -----------------
