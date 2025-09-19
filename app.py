@@ -9,10 +9,11 @@ porcentaje = st.slider("Seleccioná porcentaje", 1, 100, 50)
 
 # Cargar imagen (contorno)
 base = Image.open("stich.png").convert("RGBA")
-# Escalar imagen si es pequeña para que el texto se vea mejor
-escala = 3  # ajustar según convenga
 w, h = base.size
-base = base.resize((w*escala, h*escala), Image.ANTIALIAS)
+
+# Escalar imagen para que el texto se vea grande
+escala = 3  # puedes ajustar según convenga
+base = base.resize((w*escala, h*escala), Image.Resampling.LANCZOS)
 w, h = base.size
 
 # Colores con 85% de transparencia (alpha ~ 217)
