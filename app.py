@@ -62,15 +62,20 @@ except:
     font_percent = ImageFont.load_default()
 
 # Nombre arriba centrado
-text_width, text_height = draw_result.textsize(nombre, font=font_name)
+bbox = draw_result.textbbox((0, 0), nombre, font=font_name)
+text_width = bbox[2] - bbox[0]
+text_height = bbox[3] - bbox[1]
 draw_result.text(((w - text_width) / 2, 5), nombre, fill=(0,0,0,255), font=font_name)
 
 # Porcentaje dentro del margen derecho, a mitad de altura
 percent_text = f"{porcentaje}%"
-text_width, text_height = draw_result.textsize(percent_text, font=font_percent)
+bbox = draw_result.textbbox((0, 0), percent_text, font=font_percent)
+text_width = bbox[2] - bbox[0]
+text_height = bbox[3] - bbox[1]
 draw_result.text((w - text_width - 10, h/2 - text_height/2), percent_text, fill=(0,0,0,255), font=font_percent)
 
 # ---------------------------
 # 6. Mostrar resultado
 # ---------------------------
 st.image(resultado, caption=f"{nombre} - {porcentaje}%")
+
