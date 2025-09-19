@@ -49,32 +49,32 @@ resultado = Image.alpha_composite(fondo, coloreado)
 resultado = Image.alpha_composite(resultado, base)
 
 # ---------------------------
-# 5. Agregar texto: nombre y porcentaje
+# 5. Agregar texto: nombre y mensaje vertical
 # ---------------------------
 draw_result = ImageDraw.Draw(resultado)
 
-# Fuente tamaño 50
+# Fuente grande (ajustar tamaño según tu imagen)
 try:
-    font_name = ImageFont.truetype("arial.ttf", 50)
-    font_percent = ImageFont.truetype("arial.ttf", 50)
+    font_name = ImageFont.truetype("arial.ttf", 80)
+    font_message = ImageFont.truetype("arial.ttf", 60)
 except:
     font_name = ImageFont.load_default()
-    font_percent = ImageFont.load_default()
+    font_message = ImageFont.load_default()
 
 # Nombre arriba centrado
 bbox = draw_result.textbbox((0, 0), nombre, font=font_name)
 text_width = bbox[2] - bbox[0]
-text_height = bbox[3] - bbox[1]
-draw_result.text(((w - text_width) / 2, 5), nombre, fill=(0,0,0,255), font=font_name)
+draw_result.text(((w - text_width) / 2, 10), nombre, fill=(0,0,0,255), font=font_name)
 
-# Porcentaje dentro del margen derecho, a mitad de altura
-percent_text = f"{porcentaje}%"
-bbox = draw_result.textbbox((0, 0), percent_text, font=font_percent)
+# Mensaje con porcentaje dentro del dibujo (vertical centrado)
+mensaje = f"Tu porcentaje de maldad es del {porcentaje}%"
+bbox = draw_result.textbbox((0, 0), mensaje, font=font_message)
 text_width = bbox[2] - bbox[0]
 text_height = bbox[3] - bbox[1]
-draw_result.text((w - text_width - 10, h/2 - text_height/2), percent_text, fill=(0,0,0,255), font=font_percent)
+draw_result.text(((w - text_width) / 2, h/2 - text_height/2), mensaje, fill=(0,0,0,255), font=font_message)
 
 # ---------------------------
 # 6. Mostrar resultado
 # ---------------------------
-st.image(resultado, caption=f"{nombre} - {porcentaje}%")
+st.image(resultado)
+
