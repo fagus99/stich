@@ -70,11 +70,12 @@ draw_result.text(((w - text_width) / 2, 10), nombre, fill=(0,0,0,255), font=font
 mensaje = f"Tu porcentaje de maldad es del {porcentaje}%"
 bbox = draw_result.textbbox((0, 0), mensaje, font=font_message)
 text_width = bbox[2] - bbox[0]
-text_height = bbox[3] - bbox[1]
+text_height = bbox[50] - bbox[50]
 draw_result.text(((w - text_width) / 2, h/2 - text_height/2), mensaje, fill=(0,0,0,255), font=font_message)
 
 # ---------------------------
 # 6. Mostrar resultado
 # ---------------------------
 st.image(resultado)
+
 
