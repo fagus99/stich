@@ -53,10 +53,10 @@ resultado = Image.alpha_composite(resultado, base)
 # ---------------------------
 draw_result = ImageDraw.Draw(resultado)
 
-# Intentar usar una fuente predeterminada
+# Fuente tamaño 50
 try:
-    font_name = ImageFont.truetype("arial.ttf", size=int(h*0.07))
-    font_percent = ImageFont.truetype("arial.ttf", size=int(h*0.1))
+    font_name = ImageFont.truetype("arial.ttf", 50)
+    font_percent = ImageFont.truetype("arial.ttf", 50)
 except:
     font_name = ImageFont.load_default()
     font_percent = ImageFont.load_default()
@@ -78,4 +78,3 @@ draw_result.text((w - text_width - 10, h/2 - text_height/2), percent_text, fill=
 # 6. Mostrar resultado
 # ---------------------------
 st.image(resultado, caption=f"{nombre} - {porcentaje}%")
-
