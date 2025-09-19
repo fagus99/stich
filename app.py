@@ -44,4 +44,33 @@ fondo = Image.new("RGBA", base.size, (255, 255, 255, 255))
 
 # ---------------------------
 # 4. Combinar: fondo + color + contorno original
-# -----------------
+# ---------------------------
+resultado = Image.alpha_composite(fondo, coloreado)
+resultado = Image.alpha_composite(resultado, base)
+
+# ---------------------------
+# 5. Agregar texto: nombre y porcentaje
+# ---------------------------
+draw_result = ImageDraw.Draw(resultado)
+
+# Intentar usar una fuente predeterminada
+try:
+    font_name = ImageFont.truetype("arial.ttf", size=int(h*0.07))
+    font_percent = ImageFont.truetype("arial.ttf", size=int(h*0.1))
+except:
+    font_name = ImageFont.load_default()
+    font_percent = ImageFont.load_default()
+
+# Nombre arriba centrado
+text_width, text_height = draw_result.textsize(nombre, font=font_name)
+draw_result.text(((w - text_width) / 2, 5), nombre, fill=(0,0,0,255), font=font_name)
+
+# Porcentaje dentro del margen derecho, a mitad de altura
+percent_text = f"{porcentaje}%"
+text_width, text_height = draw_result.textsize(percent_text, font=font_percent)
+draw_result.text((w - text_width - 10, h/2 - text_height/2), percent_text, fill=(0,0,0,255), font=font_percent)
+
+# ---------------------------
+# 6. Mostrar resultado
+# ---------------------------
+st.image(resultado, caption=f"{nombre} - {porcentaje}%")
