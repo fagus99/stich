@@ -19,26 +19,40 @@ elif porcentaje <= 60:
 else:
     color = (255, 0, 0, 217)     # rojo
 
-# Crear overlay de color proporcional
+# ---------------------------
+# 1. Crear máscara del interior del dibujo
+# ---------------------------
+# Convertir a escala de grises
+gray = base.convert("L")
+
+# Invertir para que contorno sea negro y relleno blanco
+inverted = ImageOps.invert(gray)
+
+# Umbral: todo lo suficientemente claro es relleno
+mask_interior = inverted.point(lambda p: 255 if p > 128 else 0)
+
+# ---------------------------
+# 2. Crear overlay del color
+# ---------------------------
 overlay = Image.new("RGBA", base.size, (0, 0, 0, 0))
 draw = ImageDraw.Draw(overlay)
 altura_coloreada = int(h * (porcentaje / 100))
 draw.rectangle([(0, h - altura_coloreada), (w, h)], fill=color)
 
-# Crear máscara binaria a partir del canal alfa del PNG
-alpha = base.getchannel("A")
-mask = alpha.point(lambda p: 255 if p > 0 else 0)  # todo lo que no es totalmente transparente
-
-# Pegar overlay solo dentro del contorno
+# Aplicar máscara para que solo coloree dentro del interior
 coloreado = Image.new("RGBA", base.size, (0, 0, 0, 0))
-coloreado.paste(overlay, (0, 0), mask=mask)
+coloreado.paste(overlay, (0, 0), mask=mask_interior)
 
-# Fondo blanco
+# ---------------------------
+# 3. Fondo blanco
+# ---------------------------
 fondo = Image.new("RGBA", base.size, (255, 255, 255, 255))
 
-# Combinar todo: fondo + color + contorno original
+# ---------------------------
+# 4. Combinar: fondo + color + contorno original
+# ---------------------------
 resultado = Image.alpha_composite(fondo, coloreado)
 resultado = Image.alpha_composite(resultado, base)
 
-# Mostrar
+# Mostrar resultado
 st.image(resultado, caption=f"{nombre} - {porcentaje}%")
